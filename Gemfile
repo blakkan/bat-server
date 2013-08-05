@@ -5,5 +5,6 @@ gem "pg"
 gem "activerecord"
 gem "sinatra-activerecord"
 gem "haml"
+gem "json"
 
  

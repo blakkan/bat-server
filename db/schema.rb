@@ -32,6 +32,10 @@ ActiveRecord::Schema.define(version: 20130728233447) do
     t.boolean "consumed", default: false
   end
 
+  create_table "transactions", force: true do |t|
+    t.float "dollars"
+  end
+
   create_table "turnings", force: true do |t|
     t.integer "blank_id"
     t.string  "league"
