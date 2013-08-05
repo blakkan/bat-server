@@ -150,8 +150,10 @@ end
 
 get '/buy/:species' do
   if ( Transaction.sum(:dollars) >= Log::COST)
-    Log.create(:species => params[:species])
-    Transaction.create(:dollars => -Log.COST)  #each log costs $20.00
+    ActiveRecord::Base.transaction do
+      Log.create(:species => params[:species])
+      Transaction.create(:dollars => -Log.COST)  #each log costs $20.00
+    end
     redirect '/logs'
   else
     @errorMessage = "Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"
@@ -243,41 +245,113 @@ end
 #  This is where the SOA portion will be
 #
 
+def returnPacketHelper
+
+[ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'}, {
+  :cash => sprintf("$%.2f", Transaction.sum('dollars')),
+  :logs => Log.select(:id, :species).where("not consumed").count.to_s,
+  :blanks => Blank.select(:id, :length).where("not consumed").count.to_s,
+  :turnings => Turning.select(:id, :league).where("not consumed").count.to_s,
+  :bats => Bat.select(:id, :model).where("not consumed").count.to_s
+  }.to_json ]
+end
+
+
 put '/command' do
 
   #this is where we'll read the json and decide what to do
-  #if we recognize the command
+  #if we recognize the command.  There is, by design (since this is SOA) no
+  #parameter checking.   Unlike human users, we expect the app to get it right.
+  #the only thing we check for is command validity (which lets us implement
+  #future changes- we can tell versions apart by which commands are recognized)
   theCommandHash = JSON.parse(request.body.read)
   
-  if theCommandHash["command"] =~ /BUY/i
+  case theCommandHash["command"].downcase.gsub(/\s+/, "")
+    
+    when "summary"
+      returnPacketHelper()
+    
+    when "buy"
 
     #clone of buy, for now.   Eventually move to subroutine.
+
     ActiveRecord::Base.transaction do
-      Log.create(:species => params[:species])
+      Log.create(:species => theCommandHash["species"])
       Transaction.create(:dollars => -Log::COST)  #each log costs $20.00
     end
-    redirect '/inventory/json'
+    returnPacketHelper()
 
+    
+  when "cut"
+    
+    begin
+      ActiveRecord::Base.transaction do
+        (local = Log.where("not consumed").first!).update(:consumed => true )
+        #Get a random number of blanks from each log
+        (Random.rand(4)+2).times do
+          local.blanks.create(:length => theCommandHash["length"])
+        end
+      end
+      retVal = returnPacketHelper()
+    rescue ActiveRecord::RecordNotFound
+      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to cut a log when none are available."]]
+    end
+    retVal
+  
+  
+  when "turn"
+      begin
+      ActiveRecord::Base.transaction do
+        (local = Blank.where("not consumed").first!).update(:consumed => true )
+        local.create_turning(:league => theCommandHash["league"])
+      end
+        retVal = returnPacketHelper()
+      rescue ActiveRecord::RecordNotFound
+        retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to turn a blank when none are available."]]
+      end
+      retVal
+    
+  
+  when "finish"
+    begin
+      ActiveRecord::Base.transaction do
+        (local = Turning.where("not consumed").first!).update(:consumed => true )
+        local.create_bat(:model => theCommandHash["model"])
+      end
+      retVal = returnPacketHelper()
+    rescue ActiveRecord::RecordNotFound
+      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to finish a turning when none are available."]]
+    end
+    retVal
+    
+  
+  when "sell"
+    begin
+      ActiveRecord::Base.transaction do
+        Bat.where("not consumed").first!.update(:consumed => true )
+        Transaction.create(:dollars => Bat::PRICE)  #sell each bat for $10.00
+      end
+      retVal = returnPacketHelper()
+    rescue ActiveRecord::RecordNotFound
+      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
+    end
+    retVal
+    
   else
 
-    [ 200, { 'Content-type' => 'text/plain'}, [request.body.read]]
+    [ 400, { 'Content-type' => 'text/plain'}, ["Unrecognized command"]]
 
   end
 end
 
 # basic SOA status return (just in response to a request, not from doing a command)
 get '/summary/json' do
-  # could make the type text/json to really do it up right, but for this, just test
-  [ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'}, {
-    :cash => sprintf("$%.2f", Transaction.sum('dollars')),
-    :logs => Log.select("not consumed").count.to_s,
-    :blanks => Blank.select("not consumed").count.to_s,
-    :turnings => Turning.select("not consumed").count.to_s,
-    :bats => Bat.select("not consumed").count.to_s
-    }.to_json ]
+  returnPacketHelper()
+
 end
 
 # basic SOA status return (just in response to a request, not from doing a command)
+# this one gives lists of inventories
 get '/inventory/json' do
   # could make the type text/json to really do it up right, but for this, just test
   [ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'}, {
