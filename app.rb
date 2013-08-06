@@ -400,7 +400,7 @@ __END__
 %table{"border"=>"1"}
   %th= "ID"
   %th= "Receipt"
-  -Transaction.all.each do |row|
+  -Transaction.all.order("id ASC").each do |row|
     %tr
       %td= row.id
       %td= row.dollars
@@ -409,7 +409,7 @@ __END__
   %th= "Log ID"
   %th= "Species"
   %th= "Consumed?"
-  -Log.all.each do |row|
+  -Log.all.order("id ASC").each do |row|
     %tr
       %td= row.id
       %td= row.species
@@ -420,7 +420,7 @@ __END__
   %th= "From Log ID"
   %th= "Length"
   %th= "Consumed?"
-  -Blank.all.each do |row|
+  -Blank.all.order("id ASC").each do |row|
     %tr
       %td= row.id
       %td= row.log_id
@@ -432,7 +432,7 @@ __END__
   %th= "From Blank ID"
   %th= "League"
   %th= "Consumed?"
-  -Turning.all.each do |row|
+  -Turning.all.order("id ASC").each do |row|
     %tr
       %td= row.id
       %td= row.blank_id
@@ -444,7 +444,7 @@ __END__
   %th= "From Turning ID"
   %th= "Model"
   %th= "Sold?"
-  -Bat.all.each do |row|
+  -Bat.all.order("id ASC").each do |row|
     %tr
       %td= row.id
       %td= row.turning_id
