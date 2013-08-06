@@ -403,7 +403,7 @@ __END__
   -Transaction.all.order("id ASC").each do |row|
     %tr
       %td= row.id
-      %td= row.dollars
+      %td= sprintf("$%.2f",row.dollars)
 %h2= "Logs"
 %table{"border"=>"1"}
   %th= "Log ID"
