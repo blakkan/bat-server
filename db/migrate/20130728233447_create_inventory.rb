@@ -46,7 +46,7 @@ class CreateInventory < ActiveRecord::Migration
 
   def down
     
-    drop_table :transactions
+  #  drop_table :transactions
     drop_table :logs
     drop_table :blanks
     drop_table :turnings
