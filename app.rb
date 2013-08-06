@@ -142,6 +142,12 @@ get '/bats' do
   haml :template_for_list
 end
 
+
+get '/ledger' do
+  
+  haml :template_for_ledger
+end
+
 #
 # These controllers drive the actions; should probably put transactions
 # around the various table manipulations
@@ -344,7 +350,13 @@ put '/command' do
   end
 end
 
+
+
+
+#
 # basic SOA status return (just in response to a request, not from doing a command)
+#
+
 get '/summary/json' do
   returnPacketHelper()
 
@@ -381,6 +393,64 @@ __END__
       %tr
         %td= row.linelist
 %h3= "End of list"
+
+@@template_for_ledger
+%h1= "Ledger"
+%h2= "Cash"
+%table{"border"=>"1"}
+  %th= "ID"
+  %th= "Receipt"
+  -Transaction.all.each do |row|
+    %tr
+      %td= row.id
+      %td= row.dollars
+%h2= "Logs"
+%table{"border"=>"1"}
+  %th= "Log ID"
+  %th= "Species"
+  %th= "Consumed?"
+  -Log.all.each do |row|
+    %tr
+      %td= row.id
+      %td= row.species
+      %td= row.consumed
+%h2= "Blanks"
+%table{"border"=>"1"}
+  %th= "Blank ID"
+  %th= "From Log ID"
+  %th= "Length"
+  %th= "Consumed?"
+  -Blank.all.each do |row|
+    %tr
+      %td= row.id
+      %td= row.log_id
+      %td= row.length
+      %td= row.consumed
+%h2= "Turnings"
+%table{"border"=>"1"}
+  %th= "Turning ID"
+  %th= "From Blank ID"
+  %th= "League"
+  %th= "Consumed?"
+  -Turning.all.each do |row|
+    %tr
+      %td= row.id
+      %td= row.blank_id
+      %td= row.league
+      %td= row.consumed
+%h2= "Bats"
+%table{"border"=>"1"}
+  %th= "Bat ID"
+  %th= "From Turning ID"
+  %th= "Model"
+  %th= "Sold?"
+  -Bat.all.each do |row|
+    %tr
+      %td= row.id
+      %td= row.turning_id
+      %td= row.model
+      %td= row.consumed
+
 
 @@template_for_cash_balance
 %h1= "Cash Balance = $" + sprintf('%.2f',@total)
