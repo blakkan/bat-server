@@ -395,7 +395,7 @@ __END__
 %h3= "End of list"
 
 @@template_for_ledger
-%h1= "Ledger"
+%h1= "Ledger of all tables"
 %h2= "Cash"
 %table{"border"=>"1"}
   %th= "ID"
