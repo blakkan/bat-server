@@ -74,6 +74,9 @@ end
 
 
 configure do 
+  
+  $versionString = "Version 0.1"
+  
   ############################################################
   #
   # Hook up the database.   Here we're using a local file, but
@@ -158,7 +161,7 @@ get '/buy/:species' do
   if ( Transaction.sum(:dollars) >= Log::COST)
     ActiveRecord::Base.transaction do
       Log.create(:species => params[:species])
-      Transaction.create(:dollars => -Log.COST)  #each log costs $20.00
+      Transaction.create(:dollars => -Log::COST)  #each log costs $20.00
     end
     redirect '/logs'
   else
@@ -385,78 +388,93 @@ __END__
 
 
 @@template_for_list
-%h1= @headText
-%h3= "Start of List"
-%table
-  %tbody
-    - @items.each do |row|
-      %tr
-        %td= row.linelist
-%h3= "End of list"
+%head
+  %title= $versionString
+%body
+  %h1= @headText
+  %h3= "Start of List"
+  %table
+    %tbody
+      - @items.each do |row|
+        %tr
+          %td= row.linelist
+  %h3= "End of list"
 
 @@template_for_ledger
-%h1= "Ledger of all tables"
-%h2= "Cash"
-%table{"border"=>"1"}
-  %th= "ID"
-  %th= "Receipt"
-  -Transaction.all.order("id ASC").each do |row|
-    %tr
-      %td= row.id
-      %td= sprintf("$%.2f",row.dollars)
-%h2= "Logs"
-%table{"border"=>"1"}
-  %th= "Log ID"
-  %th= "Species"
-  %th= "Consumed?"
-  -Log.all.order("id ASC").each do |row|
-    %tr
-      %td= row.id
-      %td= row.species
-      %td= row.consumed
-%h2= "Blanks"
-%table{"border"=>"1"}
-  %th= "Blank ID"
-  %th= "From Log ID"
-  %th= "Length"
-  %th= "Consumed?"
-  -Blank.all.order("id ASC").each do |row|
-    %tr
-      %td= row.id
-      %td= row.log_id
-      %td= row.length
-      %td= row.consumed
-%h2= "Turnings"
-%table{"border"=>"1"}
-  %th= "Turning ID"
-  %th= "From Blank ID"
-  %th= "League"
-  %th= "Consumed?"
-  -Turning.all.order("id ASC").each do |row|
-    %tr
-      %td= row.id
-      %td= row.blank_id
-      %td= row.league
-      %td= row.consumed
-%h2= "Bats"
-%table{"border"=>"1"}
-  %th= "Bat ID"
-  %th= "From Turning ID"
-  %th= "Model"
-  %th= "Sold?"
-  -Bat.all.order("id ASC").each do |row|
-    %tr
-      %td= row.id
-      %td= row.turning_id
-      %td= row.model
-      %td= row.consumed
+%head
+  %title= $versionString
+%body
+  %h1= "Ledger of all tables"
+  %h2= "Cash"
+  %table{"border"=>"1"}
+    %th= "ID"
+    %th= "Receipt"
+    -Transaction.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= sprintf("$%.2f",row.dollars)
+  %h2= "Logs"
+  %table{"border"=>"1"}
+    %th= "Log ID"
+    %th= "Species"
+    %th= "Consumed?"
+    -Log.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= row.species
+        %td= row.consumed
+  %h2= "Blanks"
+  %table{"border"=>"1"}
+    %th= "Blank ID"
+    %th= "From Log ID"
+    %th= "Length"
+    %th= "Consumed?"
+    -Blank.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= row.log_id
+        %td= row.length
+        %td= row.consumed
+  %h2= "Turnings"
+  %table{"border"=>"1"}
+    %th= "Turning ID"
+    %th= "From Blank ID"
+    %th= "League"
+    %th= "Consumed?"
+    -Turning.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= row.blank_id
+        %td= row.league
+        %td= row.consumed
+  %h2= "Bats"
+  %table{"border"=>"1"}
+    %th= "Bat ID"
+    %th= "From Turning ID"
+    %th= "Model"
+    %th= "Sold?"
+    -Bat.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= row.turning_id
+        %td= row.model
+        %td= row.consumed
 
 
 @@template_for_cash_balance
-%h1= "Cash Balance = $" + sprintf('%.2f',@total)
+%head
+  %title= $versionString
+%body
+  %h1= "Cash Balance = $" + sprintf('%.2f',@total)
 
 @@template_for_ack
-%h3= "Completed"
+%head
+  %title= $versionString
+%body
+  %h3= "Completed"
 
 @@template_for_fail
-%h3= "Error: " + @errorMessage
+%head
+  %title= $versionString
+%body
+  %h3= "Error: " + @errorMessage
