@@ -378,6 +378,81 @@ get '/inventory/json' do
     }.to_json ]
 end
 
+#
+# Basic operations from the web
+#
+get '/webform' do
+  
+  haml :template_for_control_form
+
+end
+
+get '/form_result' do
+  
+  puts "In form result"
+  # should use ruby case
+  if params["button_name"] == "Buy"
+    #clone of buy, for now.   Eventually move to subroutine.
+
+    ActiveRecord::Base.transaction do
+      Log.create(:species => "Ash")
+      Transaction.create(:dollars => -Log::COST)  #each log costs $20.00
+    end
+    returnPacketHelper()
+  elsif params["button_name"] == "Cut"
+    begin
+      ActiveRecord::Base.transaction do
+        (local = Log.where("not consumed").first!).update(:consumed => true )
+        #Get a random number of blanks from each log
+        (Random.rand(4)+2).times do
+          local.blanks.create(:length => 38)
+        end
+      end
+      retVal = returnPacketHelper()
+    rescue ActiveRecord::RecordNotFound
+      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to cut a log when none are available."]]
+    end
+    retVal
+  elsif parama["button_name"] == "Turn"
+    begin
+      ActiveRecord::Base.transaction do
+        (local = Blank.where("not consumed").first!).update(:consumed => true )
+        local.create_turning(:league => "AL")
+      end
+      retVal = returnPacketHelper()
+    rescue ActiveRecord::RecordNotFound
+      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to turn a blank when none are available."]]
+    end
+    retVal
+  elsif params["button_name"] == "Finish"
+    begin
+      ActiveRecord::Base.transaction do
+        (local = Turning.where("not consumed").first!).update(:consumed => true )
+        local.create_bat(:model => "Cobb")
+      end
+      retVal = returnPacketHelper()
+    rescue ActiveRecord::RecordNotFound
+      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to finish a turning when none are available."]]
+    end
+    retVal
+  elsif params["button_name"] == "Sell"
+    begin
+      ActiveRecord::Base.transaction do
+        Bat.where("not consumed").first!.update(:consumed => true )
+        Transaction.create(:dollars => Bat::PRICE)  #sell each bat for $10.00
+      end
+      retVal = returnPacketHelper()
+    rescue ActiveRecord::RecordNotFound
+      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
+    end
+    retVal
+  else
+    [ 400, { 'Content-type' => 'text/plain'}, ["Unrecognized command"]]
+  end
+
+end
+
+
 __END__
 
 ######################################################
@@ -478,3 +553,16 @@ __END__
   %title= $versionString
 %body
   %h3= "Error: " + @errorMessage
+  
+@@template_for_control_form
+%head
+  %title= $versionString
+%body
+  %h1= "Select an operation"
+  %form{:method => "get", :action => "/form_result", :name => "my_input" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Buy" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Cut" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Turn" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Finish" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Sell" }
+
