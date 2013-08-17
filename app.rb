@@ -413,7 +413,7 @@ get '/form_result' do
       retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to cut a log when none are available."]]
     end
     retVal
-  elsif parama["button_name"] == "Turn"
+  elsif params["button_name"] == "Turn"
     begin
       ActiveRecord::Base.transaction do
         (local = Blank.where("not consumed").first!).update(:consumed => true )
