@@ -5,10 +5,22 @@ require 'sinatra/activerecord'
 require 'haml'
 require 'json'
 
+#
+# Exercise program; intentionally one big file (would normally
+# split out all the views and models).    First part of the
+# file are the models.   Second, the controller(s), and the final
+# part of the file are HAML page definitions.
+#
+# Since this is fundamentally for SOA use, there isn't any
+# css; just a circa 1993 look, if accessed by browsers.
+#
+
 
 ################################################################
 #
-# And here are the database classes for persisting data
+# Here are the database classes for persisting data.
+#   Each has a "linelist" method (which is really just an application
+#   specific "to string")
 #
 ################################################################
 class Transaction < ActiveRecord::Base
@@ -68,10 +80,21 @@ end
 
 ############################################################
 #
-# Here is where we do our setups 
+# Here is the "controller" portion of MVC.    Sinatra has
+# a configure section, run at startup.   Then the routes
+# and the actions
 #
 ############################################################
 
+#
+# Controller setup
+#
+#  All we do here is do a runtime setup of the global version
+# string (left as a variable during testing, (lets us use the
+# page title as a "mini-flash" display) would ultimately become
+# a constant), and make the database connection.    (Database is
+# always postgres, either running locally or on heroku)
+#
 
 configure do 
   
@@ -101,14 +124,15 @@ configure do
   )
 
 end
-#########################################################
+
+#
 #
 # Here are the routes and controllers
 #
-#########################################################
+#
 
 #
-# These controllers return the inventory
+# These routes return the inventory of each object, in simple HTML
 #
 get '/cash_transactions' do
   @items = Transaction.all.to_a
@@ -145,9 +169,8 @@ get '/bats' do
   haml :template_for_list
 end
 
-
+# This route returns an inventory of all the objects, in simple HTML
 get '/ledger' do
-  
   haml :template_for_ledger
 end
 
@@ -175,6 +198,7 @@ end
 get '/cut/:logId/:length' do
 
   begin
+           
     if (theLog = Log.find(params[:logId].to_s.to_i)).consumed == true
       @errorMessage = "Attempt to cut a log (id = #{params[:logId].to_s}) which has already been cut"
       haml :template_for_fail
@@ -265,6 +289,13 @@ def returnPacketHelper
   }.to_json ]
 end
 
+
+#
+# This version is less "RESTful"- it takes a command from a put;
+# the more "RESTful" way is to encode the operation into a POST against
+# an item.   For pedegogical purposes, these operations are mostly cloned;
+# for production, we'd put much of the operation into shared helper methods.
+#
 
 put '/command' do
 
@@ -365,8 +396,10 @@ get '/summary/json' do
 
 end
 
+#
 # basic SOA status return (just in response to a request, not from doing a command)
-# this one gives lists of inventories
+# this one gives lists of inventories in json format
+#
 get '/inventory/json' do
   # could make the type text/json to really do it up right, but for this, just test
   [ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'}, {
@@ -379,15 +412,17 @@ get '/inventory/json' do
 end
 
 #
-# Basic operations from the web
+# Basic operations from the web; this is more for user interaction on the
+# web, rather than a RESTful SOA API.
 #
-get '/webform' do
-  
+
+get '/webform' do   #Gets a page showing buttons for the commands
+
   haml :template_for_control_form
 
 end
 
-get '/form_result' do
+get '/form_result' do  #Acts on the commands
   
   puts "In form result"
   # should use ruby case
@@ -455,9 +490,11 @@ end
 
 __END__
 
+
+
 ######################################################
 #
-# And Sinatra's inline views are right here
+# Sinatra's inline views are right here
 #
 ######################################################
 
