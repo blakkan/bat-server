@@ -200,10 +200,12 @@ post '/buy/:species' do
       Log.create(:species => params[:species])
       Transaction.create(:dollars => -Log::COST)  #each log costs $20.00
     end
-    redirect '/logs'
+    #redirect '/logs'
+    returnPacketHelper()
   else
-    @errorMessage = "Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"
-    haml :template_for_fail
+    [404, { 'Content-type' => 'text/plain'},["Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"]]
+    #@errorMessage = "Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"
+    #haml :template_for_fail
   end
 end
 
@@ -215,24 +217,25 @@ post '/cut/:logId/:length' do
     if ( params[:logId].downcase == "oldest")    
       params[:logId] = Log.where("not consumed").first!.id.to_s
     end
-    if (theLog = Log.find(params[:logId].to_s.to_i)).consumed == true
-      @errorMessage = "Attempt to cut a log (id = #{params[:logId].to_s}) which has already been cut"
-      haml :template_for_fail
-    else
-
-      ActiveRecord::Base.transaction do
+    ActiveRecord::Base.transaction do
+      if (theLog = Log.find(params[:logId].to_s.to_i)).consumed == true
+        @errorMessage = "Attempt to cut a log (id = #{params[:logId].to_s}) which has already been cut"
+        haml :template_for_fail
+      else
         theLog.update( :consumed => true )
         #Get a random number of blanks from each log
         (Random.rand(4)+2).times do
           theLog.blanks.create(:length => params[:length])
         end
-        redirect '/blanks'
+        #redirect '/blanks'
+        returnPacketHelper()
       end
     end
 
   rescue ActiveRecord::RecordNotFound
-    @errorMessage = "Attempt to cut a log (id = #{params[:logId].to_s}) for which there is no record"
-    haml :template_for_fail
+    retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to cut a log when none are available."]]
+    #@errorMessage = "Attempt to cut a log (id = #{params[:logId].to_s}) for which there is no record"
+    #haml :template_for_fail
   end
 end
 
@@ -241,19 +244,21 @@ post '/turn/:blankId/:league' do
     if ( params[:blankId].downcase == "oldest")    
       params[:blankId] = Blank.where("not consumed").first!.id.to_s  
     end
-    if Blank.find(params[:blankId].to_s.to_i).consumed == true
-      @errorMessage = "Attempt to turn a blank (id = #{params[:blankId].to_s}) which has already been turned"
-      haml :template_for_fail
-    else
-      ActiveRecord::Base.transaction do
+    ActiveRecord::Base.transaction do
+      if Blank.find(params[:blankId].to_s.to_i).consumed == true
+        @errorMessage = "Attempt to turn a blank (id = #{params[:blankId].to_s}) which has already been turned"
+        haml :template_for_fail
+      else
         Blank.update(params[:blankId].to_s.to_i, :consumed => true )
         Blank.find(params[:blankId].to_s).create_turning(:league => params[:league])
       end
-      redirect '/turnings'
+      #redirect '/turnings'
+      returnPacketHelper()
     end
   rescue ActiveRecord::RecordNotFound
-    @errorMessage = "Attempt to turn a blank (id = #{params[:blankId].to_s}) for which there is no record"
-    haml :template_for_fail
+    retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to turn a blank when none are available."]]
+    #@errorMessage = "Attempt to turn a blank (id = #{params[:blankId].to_s}) for which there is no record"
+    #haml :template_for_fail
   end
 end
 
@@ -262,20 +267,22 @@ post '/finish/:turningId/:model' do
     if ( params[:turningId].downcase == "oldest")    
       params[:turningId] = Turning.where("not consumed").first!.id.to_s
     end
-
-    if Turning.find(params[:turningId].to_s.to_i).consumed == true
-      @errorMessage = "Attempt to finish a turning (id = #{params[:turningId].to_s}) which has already been turned"
-      haml :template_for_fail
-    else
-      ActiveRecord::Base.transaction do
+    
+    ActiveRecord::Base.transaction do
+      if Turning.find(params[:turningId].to_s.to_i).consumed == true
+        @errorMessage = "Attempt to finish a turning (id = #{params[:turningId].to_s}) which has already been turned"
+        haml :template_for_fail
+      else
         Turning.update(params[:turningId].to_s.to_i, :consumed => true )
         Turning.find(params[:turningId].to_s.to_i).create_bat(:model => params[:model])
       end
-      redirect '/bats'
+      #redirect '/bats'
+      returnPacketHelper()
     end
   rescue ActiveRecord::RecordNotFound
-    @errorMessage = "Attempt to finish a turning (id = #{params[:turningId].to_s}) for which there is no record"
-    haml :template_for_fail
+    [404, { 'Content-type' => 'text/plain'}, ["Request to finish a turning when none are available."]]
+    #@errorMessage = "Attempt to finish a turning (id = #{params[:turningId].to_s}) for which there is no record"
+    #haml :template_for_fail
   end
 end
 
@@ -284,17 +291,19 @@ post '/sell/:batId' do
     params[:batId] = Bat.where("not consumed").first!.id.to_s
   end
   begin
-    if Bat.find(params[:batId].to_s.to_i).consumed == true
-      @errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) which has already been sold"
-      haml :template_for_fail
-    else
-      ActiveRecord::Base.transaction do
+    ActiveRecord::Base.transaction do
+      if Bat.find(params[:batId].to_s.to_i).consumed == true
+        @errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) which has already been sold"
+        haml :template_for_fail
+      else
         Bat.update(params[:batId].to_s.to_i, :consumed => true )
         Transaction.create(:dollars => Bat::PRICE)  #sell each bat for $10.00
       end
-      redirect '/bats'
+      #redirect '/bats'
+      returnPacketHelper()
     end
   rescue ActiveRecord::RecordNotFound
+    ##retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
     @errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) for which there is no record"
     haml :template_for_fail
   end
@@ -488,7 +497,9 @@ post '/form_result' do  #Acts on the commands; acts on items fifo order
         @myJSONContent = returnPacketHelper()[2].to_s
         retVal = haml :template_for_control_form
       else
-        retVal = [404, { 'Content-type' => 'text/plain'},["Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"]]
+        #retVal = [404, { 'Content-type' => 'text/plain'},["Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"]]
+        @errorMessage = "Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"
+        retVal = haml :template_for_fail
       end #end of if
 
     end #end of transaction
@@ -507,7 +518,9 @@ post '/form_result' do  #Acts on the commands; acts on items fifo order
       end
 
     rescue ActiveRecord::RecordNotFound
-      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to cut a log when none are available."]]
+      #retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to cut a log when none are available."]]
+      @errorMessage = "Attempt to cut a log (id = #{params[:logId].to_s}) for which there is no record"
+      retVal = haml :template_for_fail
     end
     retVal
 
@@ -521,7 +534,9 @@ post '/form_result' do  #Acts on the commands; acts on items fifo order
       end
 
     rescue ActiveRecord::RecordNotFound
-      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to turn a blank when none are available."]]
+      #retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to turn a blank when none are available."]]
+      @errorMessage = "Attempt to turn a blank (id = #{params[:blankId].to_s}) for which there is no record"
+      retVal = haml :template_for_fail
     end
     retVal
 
@@ -535,7 +550,9 @@ post '/form_result' do  #Acts on the commands; acts on items fifo order
       end
       
     rescue ActiveRecord::RecordNotFound
-      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to finish a turning when none are available."]]
+      #[404, { 'Content-type' => 'text/plain'}, ["Request to finish a turning when none are available."]]
+      @errorMessage = "Attempt to finish a turning (id = #{params[:turningId].to_s}) for which there is no record"
+      retVal = haml :template_for_fail
     end
     retVal
     
@@ -548,7 +565,9 @@ post '/form_result' do  #Acts on the commands; acts on items fifo order
         retVal = haml :template_for_control_form
       end
     rescue ActiveRecord::RecordNotFound
-      retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
+      #retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
+      @errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) for which there is no record"
+      retVal = haml :template_for_fail
     end
     retVal
    
@@ -573,6 +592,11 @@ __END__
 #
 ######################################################
 
+@@soa_ack
+%head
+  %title= $versionString
+  %cash
+%body= "ACK"
 
 @@template_for_list
 %head
