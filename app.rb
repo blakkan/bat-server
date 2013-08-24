@@ -312,13 +312,99 @@ end
 
 get '/sample' do
 
-[ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'}, {
-  :cash => sprintf("$%.2f", Transaction.sum('dollars')),
-  :logs => Log.select(:id, :species).where("not consumed").count.to_s,
-  :blanks => Blank.select(:id, :length).where("not consumed").count.to_s,
-  :turnings => Turning.select(:id, :league).where("not consumed").count.to_s,
-  :bats => Bat.select(:id, :model).where("not consumed").count.to_s
-  }.to_json ]
+[ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'},
+  [ '{
+  "results" : [
+  {
+  "address_components" : [
+  {
+  "long_name" : "San Diego", "short_name" : "San Diego",
+  "types" : [ "locality", "political" ]
+  },
+  {
+  "long_name" : "San Diego","short_name" : "San Diego",
+  "types" : [ "administrative_area_level_2", "political" ]
+  },
+  {
+  "long_name" : "California", "short_name" : "CA",
+  "types" : [ "administrative_area_level_1", "political" ]
+  },
+  {
+  "long_name" : "United States", "short_name" : "US",
+  "types" : [ "country", "political" ]
+  }
+  ],
+  "formatted_address" : "San Diego, CA, USA",
+  "geometry" : {
+  "bounds" : {
+  "northeast" : {
+  "lat" : 33.1142490, "lng" : -116.908160
+  },
+  "southwest" : {
+  "lat" : 32.5348560, "lng" : -117.28216650
+  }
+  },
+  "location" : {
+  "lat" : 32.71532920, "lng" : -117.15725510
+  },
+  "location_type" : "APPROXIMATE",
+  "viewport" : {
+  "northeast" : {
+  "lat" : 33.1142490, "lng" : -116.908160
+  },
+  "southwest" : {
+  "lat" : 32.5348560, "lng" : -117.28216650
+  }
+  }
+  },
+  "types" : [ "locality", "political" ]
+  },
+  {
+  "address_components" : [
+  {
+  "long_name" : "San Diego", "short_name" : "San Diego",
+  "types" : [ "locality", "political" ]
+  },
+  {
+  "long_name" : "Duval", "short_name" : "Duval",
+  "types" : [ "administrative_area_level_2", "political" ]
+  },
+  {
+  "long_name" : "Texas","short_name" : "TX",
+  "types" : [ "administrative_area_level_1", "political" ]
+  },
+  {
+  "long_name" : "United States","short_name" : "US",
+  "types" : [ "country", "political" ]
+  }
+  ],
+  "formatted_address" : "San Diego, TX, USA",
+  "geometry" : {
+  "bounds" : {
+  "northeast" : {
+  "lat" : 27.77366710,"lng" : -98.2285050
+  },
+  "southwest" : {
+  "lat" : 27.746940,"lng" : -98.2499430
+  }
+  },
+  "location" : {
+  "lat" : 27.76391450,"lng" : -98.23889530
+  },
+  "location_type" : "APPROXIMATE",
+  "viewport" : {
+  "northeast" : {
+  "lat" : 27.77366710, "lng" : -98.2285050
+  },
+  "southwest" : {
+  "lat" : 27.746940,"lng" : -98.2499430
+  }
+  }
+  },
+  "types" : [ "locality", "political" ]
+  }
+  ],
+  "status" : "OK" }' ] ]
   
 end
 #
