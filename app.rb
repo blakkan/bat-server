@@ -314,7 +314,7 @@ end
           + airportParamString + "?format=application/json";
 
 
-get '/airport/status/SAN?format=application/json' do
+get '/airport/status/SAN' do
 
 [ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'},
   [ '{
