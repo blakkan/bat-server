@@ -303,9 +303,9 @@ post '/sell/:batId' do
       returnPacketHelper()
     end
   rescue ActiveRecord::RecordNotFound
-    ##retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
-    @errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) for which there is no record"
-    haml :template_for_fail
+    retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
+    ##@errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) for which there is no record"
+    ##haml :template_for_fail
   end
 end
 
