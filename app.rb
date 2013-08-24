@@ -310,6 +310,17 @@ post '/sell/:batId' do
   end
 end
 
+get '/sample' do
+
+[ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'}, {
+  :cash => sprintf("$%.2f", Transaction.sum('dollars')),
+  :logs => Log.select(:id, :species).where("not consumed").count.to_s,
+  :blanks => Blank.select(:id, :length).where("not consumed").count.to_s,
+  :turnings => Turning.select(:id, :league).where("not consumed").count.to_s,
+  :bats => Bat.select(:id, :model).where("not consumed").count.to_s
+  }.to_json ]
+  
+end
 #
 #  This is where the SOA portion will be
 #
