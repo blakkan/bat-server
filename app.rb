@@ -310,8 +310,8 @@ post '/sell/:batId' do
   end
 end
 
-"http://services.faa.gov/airport/status/"
-          + airportParamString + "?format=application/json";
+#"http://services.faa.gov/airport/status/"
+  #        + airportParamString + "?format=application/json";
 
 
 get '/airport/status/SAN' do
