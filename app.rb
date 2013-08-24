@@ -287,10 +287,11 @@ post '/finish/:turningId/:model' do
 end
 
 post '/sell/:batId' do
-  if ( params[:batId].downcase == "oldest")    
-    params[:batId] = Bat.where("not consumed").first!.id.to_s
-  end
   begin
+    if ( params[:batId].downcase == "oldest")    
+      params[:batId] = Bat.where("not consumed").first!.id.to_s
+    end
+  
     ActiveRecord::Base.transaction do
       if Bat.find(params[:batId].to_s.to_i).consumed == true
         @errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) which has already been sold"
@@ -303,7 +304,7 @@ post '/sell/:batId' do
       returnPacketHelper()
     end
   rescue ActiveRecord::RecordNotFound
-    retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
+    [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
     ##@errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) for which there is no record"
     ##haml :template_for_fail
   end
