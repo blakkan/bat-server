@@ -310,7 +310,11 @@ post '/sell/:batId' do
   end
 end
 
-get '/sample' do
+"http://services.faa.gov/airport/status/"
+          + airportParamString + "?format=application/json";
+
+
+get '/airport/status/SAN?format=application/json' do
 
 [ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'},
   [ '{
