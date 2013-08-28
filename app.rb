@@ -5,6 +5,9 @@ require 'sinatra/activerecord'
 require 'haml'
 require 'json'
 
+require_relative 'models'
+require_relative 'views'
+require_relative 'controller'
 #
 # Exercise program; intentionally one big file (would normally
 # split out all the views and models).    First part of the
@@ -203,7 +206,7 @@ post '/buy/:species' do
     #redirect '/logs'
     returnPacketHelper()
   else
-    [404, { 'Content-type' => 'text/plain'},["Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"]]
+    returnPacketHelper( "Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}" )
     #@errorMessage = "Attempt to buy a log (cost = $#{Log::COST}) when cash available = $#{Transaction.sum(:dollars)}"
     #haml :template_for_fail
   end
@@ -233,7 +236,7 @@ post '/cut/:logId/:length' do
     end
 
   rescue ActiveRecord::RecordNotFound
-    retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to cut a log when none are available."]]
+    returnPacketHelper("Request to cut a log when none are available.")
     #@errorMessage = "Attempt to cut a log (id = #{params[:logId].to_s}) for which there is no record"
     #haml :template_for_fail
   end
@@ -256,7 +259,7 @@ post '/turn/:blankId/:league' do
       returnPacketHelper()
     end
   rescue ActiveRecord::RecordNotFound
-    retVal = [404, { 'Content-type' => 'text/plain'}, ["Request to turn a blank when none are available."]]
+    returnPacketHelper("Request to turn a blank when none are available.")
     #@errorMessage = "Attempt to turn a blank (id = #{params[:blankId].to_s}) for which there is no record"
     #haml :template_for_fail
   end
@@ -280,7 +283,7 @@ post '/finish/:turningId/:model' do
       returnPacketHelper()
     end
   rescue ActiveRecord::RecordNotFound
-    [404, { 'Content-type' => 'text/plain'}, ["Request to finish a turning when none are available."]]
+    returnPacketHelper("Request to finish a turning when none are available.")
     #@errorMessage = "Attempt to finish a turning (id = #{params[:turningId].to_s}) for which there is no record"
     #haml :template_for_fail
   end
@@ -304,118 +307,15 @@ post '/sell/:batId' do
       returnPacketHelper()
     end
   rescue ActiveRecord::RecordNotFound
-    [404, { 'Content-type' => 'text/plain'}, ["Request to sell a bat when none are available."]]
+    returnPacketHelper("Request to sell a bat when none are available.")
     ##@errorMessage = "Attempt to sell a bat (id = #{params[:batId].to_s}) for which there is no record"
     ##haml :template_for_fail
   end
 end
 
-#"http://services.faa.gov/airport/status/"
-  #        + airportParamString + "?format=application/json";
 
 
-get '/airport/status/SAN' do
-
-[ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'},
-  [ '{
-  "results" : [
-  {
-  "address_components" : [
-  {
-  "long_name" : "San Diego", "short_name" : "San Diego",
-  "types" : [ "locality", "political" ]
-  },
-  {
-  "long_name" : "San Diego","short_name" : "San Diego",
-  "types" : [ "administrative_area_level_2", "political" ]
-  },
-  {
-  "long_name" : "California", "short_name" : "CA",
-  "types" : [ "administrative_area_level_1", "political" ]
-  },
-  {
-  "long_name" : "United States", "short_name" : "US",
-  "types" : [ "country", "political" ]
-  }
-  ],
-  "formatted_address" : "San Diego, CA, USA",
-  "geometry" : {
-  "bounds" : {
-  "northeast" : {
-  "lat" : 33.1142490, "lng" : -116.908160
-  },
-  "southwest" : {
-  "lat" : 32.5348560, "lng" : -117.28216650
-  }
-  },
-  "location" : {
-  "lat" : 32.71532920, "lng" : -117.15725510
-  },
-  "location_type" : "APPROXIMATE",
-  "viewport" : {
-  "northeast" : {
-  "lat" : 33.1142490, "lng" : -116.908160
-  },
-  "southwest" : {
-  "lat" : 32.5348560, "lng" : -117.28216650
-  }
-  }
-  },
-  "types" : [ "locality", "political" ]
-  },
-  {
-  "address_components" : [
-  {
-  "long_name" : "San Diego", "short_name" : "San Diego",
-  "types" : [ "locality", "political" ]
-  },
-  {
-  "long_name" : "Duval", "short_name" : "Duval",
-  "types" : [ "administrative_area_level_2", "political" ]
-  },
-  {
-  "long_name" : "Texas","short_name" : "TX",
-  "types" : [ "administrative_area_level_1", "political" ]
-  },
-  {
-  "long_name" : "United States","short_name" : "US",
-  "types" : [ "country", "political" ]
-  }
-  ],
-  "formatted_address" : "San Diego, TX, USA",
-  "geometry" : {
-  "bounds" : {
-  "northeast" : {
-  "lat" : 27.77366710,"lng" : -98.2285050
-  },
-  "southwest" : {
-  "lat" : 27.746940,"lng" : -98.2499430
-  }
-  },
-  "location" : {
-  "lat" : 27.76391450,"lng" : -98.23889530
-  },
-  "location_type" : "APPROXIMATE",
-  "viewport" : {
-  "northeast" : {
-  "lat" : 27.77366710, "lng" : -98.2285050
-  },
-  "southwest" : {
-  "lat" : 27.746940,"lng" : -98.2499430
-  }
-  }
-  },
-  "types" : [ "locality", "political" ]
-  }
-  ],
-  "status" : "OK" }' ] ]
-  
-end
-#
-#  This is where the SOA portion will be
-#
-
-def returnPacketHelper
+def returnPacketHelper( toastMessageString = "" )
   retVal = [ 500, { 'Content-type' => 'text/plain'}, ["Return Packet Helper Failed"]]
   ActiveRecord::Base.transaction do   #read only but still wrap with a transaction
 
@@ -424,7 +324,8 @@ def returnPacketHelper
       :logs => Log.select(:id, :species).where("not consumed").count.to_s,
       :blanks => Blank.select(:id, :length).where("not consumed").count.to_s,
       :turnings => Turning.select(:id, :league).where("not consumed").count.to_s,
-      :bats => Bat.select(:id, :model).where("not consumed").count.to_s
+      :bats => Bat.select(:id, :model).where("not consumed").count.to_s,
+      :message => toastMessageString
       }.to_json ]
   end
   retVal
