@@ -5,6 +5,6 @@ require 'sinatra/activerecord'
 require 'haml'
 require 'json'
 
-require_relative './models'
-require_relative './controller'
+require_relative 'models'
+require_relative 'controller'
 

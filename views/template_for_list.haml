@@ -1,0 +1,12 @@
+%head
+  %title= $versionString
+  %cash
+%body
+  %h1= @headText
+  %h3= "Start of List"
+  %table
+    %tbody
+      - @items.each do |row|
+        %tr
+          %td= row.linelist
+  %h3= "End of list"

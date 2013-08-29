@@ -1,0 +1,17 @@
+%head
+  %title= $versionString
+%body
+  %h1= "Summary Ledger (JSON format)"
+  %h3= @myJSONContent
+  %h1= "Select an operation"
+  %form{:method => "post", :action => "/form_result", :name => "my_input" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Buy" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Cut" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Turn" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Finish" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Sell" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Update Screen" }
+  %form{:method => "get", :action => "/ledger", :name => "view_ledger"}
+    %input{:type => "submit", :class => "button", :name => "button_name", :value=>"Go to Ledger Page"}
+    
+      

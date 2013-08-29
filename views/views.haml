@@ -1,0 +1,120 @@
+######################################################
+#
+# Sinatra's inline views are right here
+#
+######################################################
+
+@@soa_ack
+%head
+  %title= $versionString
+  %cash
+%body= "ACK"
+
+@@template_for_list
+%head
+  %title= $versionString
+  %cash
+%body
+  %h1= @headText
+  %h3= "Start of List"
+  %table
+    %tbody
+      - @items.each do |row|
+        %tr
+          %td= row.linelist
+  %h3= "End of list"
+
+@@template_for_ledger
+%head
+  %title= $versionString
+%body
+  %h1= "Ledger of all tables"
+  %h2= "Cash"
+  %table{"border"=>"1"}
+    %th= "ID"
+    %th= "Receipt"
+    -Transaction.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= sprintf("$%.2f",row.dollars)
+  %h2= "Logs"
+  %table{"border"=>"1"}
+    %th= "Log ID"
+    %th= "Species"
+    %th= "Consumed?"
+    -Log.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= row.species
+        %td= row.consumed
+  %h2= "Blanks"
+  %table{"border"=>"1"}
+    %th= "Blank ID"
+    %th= "From Log ID"
+    %th= "Length"
+    %th= "Consumed?"
+    -Blank.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= row.log_id
+        %td= row.length
+        %td= row.consumed
+  %h2= "Turnings"
+  %table{"border"=>"1"}
+    %th= "Turning ID"
+    %th= "From Blank ID"
+    %th= "League"
+    %th= "Consumed?"
+    -Turning.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= row.blank_id
+        %td= row.league
+        %td= row.consumed
+  %h2= "Bats"
+  %table{"border"=>"1"}
+    %th= "Bat ID"
+    %th= "From Turning ID"
+    %th= "Model"
+    %th= "Sold?"
+    -Bat.all.order("id ASC").each do |row|
+      %tr
+        %td= row.id
+        %td= row.turning_id
+        %td= row.model
+        %td= row.consumed
+
+
+@@template_for_cash_balance
+%head
+  %title= $versionString
+%body
+  %h1= "Cash Balance = $" + sprintf('%.2f',@total)
+
+@@template_for_ack
+%head
+  %title= $versionString
+%body
+  %h3= "Completed"
+
+@@template_for_fail
+%head
+  %title= $versionString
+%body
+  %h3= "Error: " + @errorMessage
+  
+@@template_for_control_form
+%head
+  %title= $versionString
+%body
+  %h1= "Summary Ledger (JSON format)"
+  %h3= @myJSONContent
+  %h1= "Select an operation"
+  %form{:method => "post", :action => "/form_result", :name => "my_input" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Buy" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Cut" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Turn" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Finish" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Sell" }
+    %input{:type => "submit", :class => "button", :name=>"button_name", :value=>"Update Screen" }
+
