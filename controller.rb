@@ -19,7 +19,7 @@ configure do
   # page titles on the fly.   Using it as a pseuld "Flash" (or Toast,
   # in Android parlance.
   #
-  $versionString = "Version 0.1"
+  $versionString = "Version 0.1a"
   
   ############################################################
   #
