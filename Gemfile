@@ -8,5 +8,5 @@ gem "activerecord"
 gem "sinatra-activerecord"
 gem "haml"
 gem "json"
-
+gem "rb-readline"
  
