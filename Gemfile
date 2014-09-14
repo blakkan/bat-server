@@ -1,6 +1,7 @@
 source "https://rubygems.org"
-ruby "2.0.0"
+ruby "2.1.2"
 gem "rack"
+gem "thin"
 gem "sinatra"
 gem "pg"
 gem "activerecord"

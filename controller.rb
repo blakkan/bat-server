@@ -265,10 +265,10 @@ def returnPacketHelper( toastMessageString = "" )
   ActiveRecord::Base.transaction do   #read only but still wrap with a transaction
     retVal = [ 200, { 'Content-type' => 'application/json', 'Cache-control' => 'no-cache'}, {
       :cash => sprintf("$%.2f", Transaction.sum('dollars')),
-      :logs => Log.select(:id, :species).where("not consumed").count.to_s,
-      :blanks => Blank.select(:id, :length).where("not consumed").count.to_s,
-      :turnings => Turning.select(:id, :league).where("not consumed").count.to_s,
-      :bats => Bat.select(:id, :model).where("not consumed").count.to_s,
+      :logs => Log.select(:id, :species).where("not consumed").length.to_s,
+      :blanks => Blank.select(:id, :length).where("not consumed").length.to_s,
+      :turnings => Turning.select(:id, :league).where("not consumed").length.to_s,
+      :bats => Bat.select(:id, :model).where("not consumed").length.to_s,
       :message => toastMessageString
       }.to_json ]
   end
